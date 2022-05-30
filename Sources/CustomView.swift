@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class CustomView: UIView {
+public final class CustomView: UIView {
     let label: UILabel = {
         let label = UILabel()
         label.text = "CustomView"
