@@ -26,7 +26,7 @@ public final class CustomView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func layoutSubviews() {
+    public override func layoutSubviews() {
         super.layoutSubviews()
         
         layout()
@@ -38,7 +38,7 @@ public final class CustomView: UIView {
         return label.frame.size
     }
     
-    override func sizeThatFits(_ size: CGSize) -> CGSize {
+    public override func sizeThatFits(_ size: CGSize) -> CGSize {
         pin.width(size.width)
         return layout()
     }

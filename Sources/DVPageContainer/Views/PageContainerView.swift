@@ -150,7 +150,12 @@ final class PageContainerView: UIView {
             .horizontally()
             .wrapContent(.vertically)
         
-        var totalHeight: CGFloat = frame.height - chipsContainerScrollView.frame.height - safeAreaInsets.top - safeAreaInsets.bottom
+        var totalHeight: CGFloat
+        if #available(iOS 11.0, *) {
+            totalHeight = frame.height - chipsContainerScrollView.frame.height - safeAreaInsets.top - safeAreaInsets.bottom
+        } else {
+            totalHeight = frame.height - chipsContainerScrollView.frame.height - 44 - 44
+        }
         
         if !aboveChipsContainer.isHidden {
             totalHeight -= aboveChipsContainer.frame.height
@@ -165,10 +170,9 @@ final class PageContainerView: UIView {
         }
         
         
-        
         childViewsContainerScrollView.frame = CGRect(
             x: 0,
-            y: safeAreaInsets.top,
+            y: 44,
             width: frame.width,
             height: totalHeight
         )
