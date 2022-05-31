@@ -7,22 +7,22 @@
 
 import UIKit
 
-final class PageContainerPresenter {
-    private weak var pageContainerViewInput: PageContainerViewController?
+public final class DVPageContainerPresenter: DVpageContainerModuleInput {
+    private weak var pageContainerViewInput: DVPageContainerViewController?
     
-    init(pageContainerViewInput: PageContainerViewController) {
+    public init(pageContainerViewInput: DVPageContainerViewController) {
         self.pageContainerViewInput = pageContainerViewInput
     }
     
-    func setPageContainerContent(_ pageContainerContent: PageContainerContent) {
-        let viewModel = PageContainerViewModel(
+    public func setPageContainerContent(_ pageContainerContent: DVPageContainerContent) {
+        let viewModel = DVPageContainerViewModel(
             itemsViewModels: pageContainerContent.items.enumerated().map { offset, contentItem in
                 let chipsViewModel = ChipsViewModel(
                     id: offset,
                     title: contentItem.title,
                     isSelected: offset == 0
                 )
-                return PageContainerItemViewModel(
+                return DVPageContainerItemViewModel(
                     chipsViewModel: chipsViewModel,
                     childPageController: contentItem.pageController
                 )
@@ -31,11 +31,11 @@ final class PageContainerPresenter {
         pageContainerViewInput?.apply(viewModel)
     }
     
-    func childPageViewDidScroll(with offset: CGFloat) {
+    public func childPageViewDidScroll(with offset: CGFloat) {
         pageContainerViewInput?.setPageChildOffset(offset)
     }
     
-    func setCustomViewContent(_ content: CustomViewsContent) {
+    public func setInnerViewsContent(_ content: DVPageContainerInnerViewsContent) {
         pageContainerViewInput?.setCustomViewsContent(content)
     }
 }

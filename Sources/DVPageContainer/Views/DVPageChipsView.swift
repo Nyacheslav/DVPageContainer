@@ -7,12 +7,12 @@
 
 import UIKit
 
-protocol SelectableChipsViewDelegate: AnyObject {
+public protocol DVSelectablePageChipsViewDelegate: AnyObject {
     func didSelectChips(with id: Int)
 }
 
-final class ChipsView: UIView, SelectableChipsView {
-    weak var delegate: SelectableChipsViewDelegate?
+public final class DVPageChipsView: UIView, DVSelectablePageChipsView {
+    weak public var delegate: DVSelectablePageChipsViewDelegate?
     
     private let titleLabel: InsetsStyledLabel = {
         let label = InsetsStyledLabel()
@@ -23,7 +23,7 @@ final class ChipsView: UIView, SelectableChipsView {
         return label
     }()
     
-    var isSelected: Bool = false {
+    public var isSelected: Bool = false {
         didSet {
             if isSelected {
                 titleLabel.backgroundColor = .lightGray.withAlphaComponent(0.5)
@@ -50,7 +50,7 @@ final class ChipsView: UIView, SelectableChipsView {
         addSubview(titleLabel)
     }
     
-    override func layoutSubviews() {
+    public override func layoutSubviews() {
         super.layoutSubviews()
         
         layout()
@@ -74,7 +74,7 @@ final class ChipsView: UIView, SelectableChipsView {
         return CGSize(width: titleLabel.frame.maxX + 12, height: titleLabel.frame.maxY + 8)
     }
     
-    override func sizeThatFits(_ size: CGSize) -> CGSize {
+    public override func sizeThatFits(_ size: CGSize) -> CGSize {
         self.pin.width(size.width)
         return layout()
     }

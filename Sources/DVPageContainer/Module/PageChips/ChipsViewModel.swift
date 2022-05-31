@@ -5,12 +5,12 @@
 //  Created by Vyacheslav Vakulenko on 20.05.2022.
 //
 
-struct ChipsViewModel: Equatable {
-    let id: Int
-    let title: String
-    let isSelected: Bool
+public struct ChipsViewModel: Equatable {
+    public let id: Int
+    public let title: String
+    public let isSelected: Bool
     
-    init(
+    public init(
         id: Int,
         title: String,
         isSelected: Bool
@@ -22,7 +22,7 @@ struct ChipsViewModel: Equatable {
     
     private var onSelect: ((Int) -> Void)?
     
-    static func == (lhs: ChipsViewModel, rhs: ChipsViewModel) -> Bool {
+    public static func == (lhs: ChipsViewModel, rhs: ChipsViewModel) -> Bool {
         return lhs.title == rhs.title && lhs.isSelected == rhs.isSelected && lhs.id == rhs.id
     }
 }

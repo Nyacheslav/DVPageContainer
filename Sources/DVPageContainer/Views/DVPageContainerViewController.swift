@@ -1,5 +1,5 @@
 //
-//  PageContainerView.swift
+//  PageContainerController.swift
 //  PageControllerContainer
 //
 //  Created by Vyacheslav Vakulenko on 11.05.2022.
@@ -8,14 +8,11 @@
 import UIKit
 import PinLayout
 
-protocol PageContainerViewDelegate: UIViewController {
-    func onPageDidAppear(for index: Int)
-    func onRemoveAllChildViews()
-    func shouldAddChildPageController(_ viewController: PageViewController)
-    func childPageViewDidAdd(for viewController: PageViewController)
-}
-
-final class PageContainerView: UIView {
+public final class DVPageContainerViewController: UIViewController {
+    var presenter: DVPageContainerPresenter?
+    
+    private var childControllers: [DVPageViewController] = []
+    
     private lazy var chipsContainerScrollView: UIScrollView = makeScrollView()
     private lazy var childViewsContainerScrollView: UIScrollView = {
        let scrollView = makeScrollView()
@@ -25,52 +22,57 @@ final class PageContainerView: UIView {
         return scrollView
     }()
     var childrenViewsScrollVerticalInset: CGFloat = 100
-    private let chipsViewFactory: ChipsDataSource
+    private let chipsDataSource: DVChipsDataSource
     
     private lazy var contentViews: [UIView] = []
-    private lazy var chipsViews: [SelectableChipsView] = []
+    private lazy var chipsViews: [DVSelectablePageChipsView] = []
     
     var customViewsAboveChips: [UIView] {
-        visibleCustomViewsContentItemsForCurrentPage.filter { $0.position == .aboveChips }.map { $0.view }
+        visibleCustomViewsContentItemsForCurrentPage.filter { $0.position == .abovePageChips }.map { $0.view }
     }
     private lazy var aboveChipsContainer: UIView = UIView()
     
     var customViewsBetweenChipsAndContent: [UIView] {
-        visibleCustomViewsContentItemsForCurrentPage.filter { $0.position == .betweenChipsAndContent }.map { $0.view }
+        visibleCustomViewsContentItemsForCurrentPage.filter { $0.position == .belowPageChips }.map { $0.view }
     }
     private lazy var betweenChipsAndContentContainerView: UIView = UIView()
     
     var customViewsBelowContent: [UIView] {
-        visibleCustomViewsContentItemsForCurrentPage.filter { $0.position == .belowContent }.map { $0.view }
+        visibleCustomViewsContentItemsForCurrentPage.filter { $0.position == .belowPageContent }.map { $0.view }
     }
     private lazy var customViewsBelowContentContainerView: UIView = UIView()
     
-    private var customViewsContentItems: [CustomViewsContentItem] = []
-    private var visibleCustomViewsContentItemsForCurrentPage: [CustomViewsContentItem] = []
+    private var customViewsContentItems: [DVPageContainerInnerViewsContentItem] = []
+    private var visibleCustomViewsContentItemsForCurrentPage: [DVPageContainerInnerViewsContentItem] = []
     
-    weak var delegate: PageContainerViewDelegate?
-    
-    init(
-        chipsFactory: ChipsDataSource
+    public init(
+        chipsDataSource: DVChipsDataSource
     ) {
-        self.chipsViewFactory = chipsFactory
-        super.init(frame: .zero)
+        self.chipsDataSource = chipsDataSource
+        super.init(nibName: nil, bundle: nil)
         
-        backgroundColor = .white
-        
+        setupAppearance()
         setupSubviews()
     }
     
-    private func setupSubviews() {
-        addSubview(childViewsContainerScrollView)
-        addSubview(customViewsBelowContentContainerView)
-        addSubview(betweenChipsAndContentContainerView)
-        addSubview(aboveChipsContainer)
-        addSubview(chipsContainerScrollView)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
-    override func layoutSubviews() {
-        super.layoutSubviews()
+    private func setupAppearance() {
+        view.backgroundColor = .white
+    }
+    
+    private func setupSubviews() {
+        view.addSubview(childViewsContainerScrollView)
+        view.addSubview(customViewsBelowContentContainerView)
+        view.addSubview(betweenChipsAndContentContainerView)
+        view.addSubview(aboveChipsContainer)
+        view.addSubview(chipsContainerScrollView)
+    }
+    
+    public override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
         
         layout()
         
@@ -91,13 +93,13 @@ final class PageContainerView: UIView {
         }
         
         aboveChipsContainer.pin
-            .top(pin.safeArea)
+            .top(view.pin.safeArea)
             .horizontally()
             .wrapContent(.vertically)
         
         if aboveChipsContainer.isHidden {
             chipsContainerScrollView.pin
-                .top(pin.safeArea)
+                .top(view.pin.safeArea)
         } else {
             chipsContainerScrollView.pin
                 .below(of: aboveChipsContainer)
@@ -146,15 +148,15 @@ final class PageContainerView: UIView {
         }
         
         customViewsBelowContentContainerView.pin
-            .bottom(pin.safeArea)
+            .bottom(view.pin.safeArea)
             .horizontally()
             .wrapContent(.vertically)
         
         var totalHeight: CGFloat
         if #available(iOS 11.0, *) {
-            totalHeight = frame.height - chipsContainerScrollView.frame.height - safeAreaInsets.top - safeAreaInsets.bottom
+            totalHeight = view.frame.height - chipsContainerScrollView.frame.height - view.safeAreaInsets.top - view.safeAreaInsets.bottom
         } else {
-            totalHeight = frame.height - chipsContainerScrollView.frame.height - 44 - 44
+            totalHeight = view.frame.height - chipsContainerScrollView.frame.height - 44 - 44
         }
         
         if !aboveChipsContainer.isHidden {
@@ -173,7 +175,7 @@ final class PageContainerView: UIView {
         childViewsContainerScrollView.frame = CGRect(
             x: 0,
             y: 44,
-            width: frame.width,
+            width: view.frame.width,
             height: totalHeight
         )
         
@@ -188,14 +190,14 @@ final class PageContainerView: UIView {
         }
     }
     
-    private func addPageContainerItem(_ content: PageContainerItemViewModel, with index: Int) {
+    private func addPageContainerItem(_ content: DVPageContainerItemViewModel, with index: Int) {
         guard let childContentView = content.childPageController.view else { return }
         childViewsContainerScrollView.addSubview(childContentView)
         contentViews.append(childContentView)
         
-        let chipsView = chipsViewFactory.createNewChipsView(for: index)
+        let chipsView = chipsDataSource.createNewChipsView(for: index)
         chipsView.delegate = self
-        chipsViewFactory.configureChipsView(chipsView, for: index)
+        chipsDataSource.configureChipsView(chipsView, for: index)
         
         chipsContainerScrollView.addSubview(chipsView)
         chipsViews.append(chipsView)
@@ -211,24 +213,19 @@ final class PageContainerView: UIView {
         contentViews = []
         chipsViews = []
         
-        delegate?.onRemoveAllChildViews()
         
-        setNeedsLayout()
+        view.setNeedsLayout()
     }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    func setCustomViewsContent(_ content: CustomViewsContent, for item: Int? = nil) {
+    func setCustomViewsContent(_ content: DVPageContainerInnerViewsContent, for item: Int? = nil) {
         let item = item ?? 0//Int(childViewsContainerScrollView.contentOffset.x / childViewsContainerScrollView.frame.width)
         customViewsContentItems.map { $0.view }.forEach { $0.removeFromSuperview() }
         self.customViewsContentItems = content.items
         self.visibleCustomViewsContentItemsForCurrentPage = content.items.filter { contentItem in
-            if case let .visibleForSpecificItem(id) = contentItem.visibilityParameter {
+            if case let .specificPage(index: id) = contentItem.visibility {
                 return id == item
             } else {
-                return contentItem.visibilityParameter == .visibleForAll
+                return contentItem.visibility == .all
             }
         }
         customViewsAboveChips.forEach { view in
@@ -240,7 +237,7 @@ final class PageContainerView: UIView {
         customViewsBelowContent.forEach { view in
             customViewsBelowContentContainerView.addSubview(view)
         }
-        setNeedsLayout()
+        view.setNeedsLayout()
     }
     
     func setPageChildOffset(_ offset: CGFloat) {
@@ -250,18 +247,29 @@ final class PageContainerView: UIView {
 //        )
     }
     
-    func apply(_ viewModel: PageContainerViewModel) {
+    func apply(_ viewModel: DVPageContainerViewModel) {
         removeAllChildViews()
         viewModel.itemsViewModels.enumerated().forEach { offset, item in
-            delegate?.shouldAddChildPageController(item.childPageController)
+            //delegate?.shouldAddChildPageController(item.childPageController)
             addPageContainerItem(item, with: offset)
-            delegate?.childPageViewDidAdd(for: item.childPageController)
+            //delegate?.childPageViewDidAdd(for: item.childPageController)
         }
-        setNeedsLayout()
+        view.setNeedsLayout()
     }
+    
+    public override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        view.backgroundColor = .white
+    }
+    
+    public func setCustomViewsContent(_ content: DVPageContainerInnerViewsContent) {
+        //pageContainerView.setCustomViewsContent(content)
+    }
+    
 }
 
-private extension PageContainerView {
+private extension DVPageContainerViewController {
     var chipsContainerScrollContentSize: CGSize {
         CGSize(
             width: chipsViews.last?.frame.maxX ?? .zero,
@@ -285,12 +293,12 @@ private extension PageContainerView {
     
     func handleCustomViews(for item: Int) {
         setCustomViewsContent(.init(items: customViewsContentItems), for: item)
-        setNeedsLayout()
+        view.setNeedsLayout()
     }
 }
 
-extension PageContainerView: UIScrollViewDelegate {
-    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+extension DVPageContainerViewController: UIScrollViewDelegate {
+    public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         let newChipsIndex = Int(scrollView.contentOffset.x / scrollView.frame.width)
         
         chipsViews.first(where: { $0.isSelected })?.isSelected = false
@@ -301,15 +309,15 @@ extension PageContainerView: UIScrollViewDelegate {
         handleCustomViews(for: newChipsIndex)
     }
     
-    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
+    public func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
         let currentPage = Int(scrollView.contentOffset.x / scrollView.frame.width)
         
-        delegate?.onPageDidAppear(for: currentPage)
+        childControllers[currentPage].onPageDidAppear()
     }
 }
 
-extension PageContainerView: SelectableChipsViewDelegate {
-    func didSelectChips(with id: Int) {
+extension DVPageContainerViewController: DVSelectablePageChipsViewDelegate {
+    public func didSelectChips(with id: Int) {
         chipsViews.first(where: { $0.isSelected })?.isSelected = false
         chipsViews[id].isSelected = true
         chipsContainerScrollView.scrollRectToVisible(chipsViews[id].frame, animated: true)

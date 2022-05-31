@@ -7,7 +7,7 @@
 
 import UIKit
 
-protocol SelectableChipsView: UIView {
+public protocol DVSelectablePageChipsView: UIView {
     var isSelected: Bool { get set }
-    var delegate: SelectableChipsViewDelegate? { get set }
+    var delegate: DVSelectablePageChipsViewDelegate? { get set }
 }

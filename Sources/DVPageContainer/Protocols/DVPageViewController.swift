@@ -7,6 +7,6 @@
 
 import UIKit
 
-protocol PageViewController: UIViewController {
+public protocol DVPageViewController: UIViewController {
     func onPageDidAppear()
 }

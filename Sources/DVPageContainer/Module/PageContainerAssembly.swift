@@ -7,29 +7,19 @@
 
 import UIKit
 
-struct PageContainerModule {
-    let viewController: UIViewController
-    let moduleInput: PageContainerPresenter
+public protocol AssemblesPageContainer {
+    func module(seed: DVPageContainerModuleSeed) -> DVPageContainerModule
 }
 
-protocol AssemblesPageContainer {
-    func module(seed: PageContainerModuleSeed) -> PageContainerModule
-}
-
-final class PageContainerAssembly: AssemblesPageContainer {
-    func module(seed: PageContainerModuleSeed) -> PageContainerModule {
-        let viewController = PageContainerViewController(chipsFactory: seed.chipsFactory)
+public final class PageContainerAssembly: AssemblesPageContainer {
+    public func module(seed: DVPageContainerModuleSeed) -> DVPageContainerModule {
+        let viewController = DVPageContainerViewController(chipsDataSource: seed.chipsDataSource)
         
-        let presenter = PageContainerPresenter(pageContainerViewInput: viewController)
+        let presenter = DVPageContainerPresenter(pageContainerViewInput: viewController)
         viewController.presenter = presenter
         
         presenter.setPageContainerContent(seed.pageContainerContent)
         
         return .init(viewController: viewController, moduleInput: presenter)
     }
-}
-
-struct PageContainerModuleSeed {
-    let pageContainerContent: PageContainerContent
-    let chipsFactory: ChipsDataSource
 }

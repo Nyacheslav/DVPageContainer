@@ -5,17 +5,17 @@
 //  Created by Vyacheslav Vakulenko on 24.05.2022.
 //
 
-struct PageContainerViewModel: Equatable {
-    let itemsViewModels: [PageContainerItemViewModel]
+public struct DVPageContainerViewModel: Equatable {
+    let itemsViewModels: [DVPageContainerItemViewModel]
 }
 
-struct PageContainerItemViewModel: Equatable {
+public struct DVPageContainerItemViewModel: Equatable {
     let chipsViewModel: ChipsViewModel
-    let childPageController: PageViewController
+    let childPageController: DVPageViewController
     
     static func == (
-        lhs: PageContainerItemViewModel,
-        rhs: PageContainerItemViewModel
+        lhs: DVPageContainerItemViewModel,
+        rhs: DVPageContainerItemViewModel
     ) -> Bool {
         return lhs.chipsViewModel == rhs.chipsViewModel && lhs.childPageController === rhs.childPageController
     }
