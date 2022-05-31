@@ -8,7 +8,7 @@
 import UIKit
 
 public protocol DVSelectablePageChipsViewDelegate: AnyObject {
-    func didSelectChips(with id: Int)
+    func selectPageChips(with id: Int)
 }
 
 public final class DVPageChipsView: UIView, DVSelectablePageChipsView {
@@ -59,7 +59,7 @@ public final class DVPageChipsView: UIView, DVSelectablePageChipsView {
     @objc private func onTap() {
         guard let viewModel = viewModel else { return }
         
-        delegate?.didSelectChips(with: viewModel.id)
+        delegate?.selectPageChips(with: viewModel.id)
     }
     
     @discardableResult

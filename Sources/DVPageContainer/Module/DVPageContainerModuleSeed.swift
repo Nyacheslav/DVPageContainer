@@ -6,14 +6,11 @@
 //
 
 public struct DVPageContainerModuleSeed {
-    public let pageContainerContent: DVPageContainerContent
-    public let chipsDataSource: DVChipsDataSource
+    public let chipsDataSource: DVPagesChipsDataSource
     
     public init(
-        pageContainerContent: DVPageContainerContent,
-        chipsDataSource: DVChipsDataSource
+        chipsDataSource: DVPagesChipsDataSource
     ) {
-        self.pageContainerContent = pageContainerContent
         self.chipsDataSource = chipsDataSource
     }
 }

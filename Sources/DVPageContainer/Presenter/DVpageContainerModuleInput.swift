@@ -7,5 +7,7 @@
 
 public protocol DVpageContainerModuleInput: AnyObject {
     func setInnerViewsContent(_ content: DVPageContainerInnerViewsContent)
-    func setPageContainerContent(_ pageContainerContent: DVPageContainerContent)
+    func setModuleOutput(_ output: DVPageContainerModuleOutput)
+    
+    func scrollToPage(with index: Int)
 }

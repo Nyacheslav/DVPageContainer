@@ -14,4 +14,3 @@ public struct DVPageContainerContent {
         self.items = items
     }
 }
-

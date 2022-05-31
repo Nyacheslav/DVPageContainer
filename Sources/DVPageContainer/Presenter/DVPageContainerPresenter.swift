@@ -7,28 +7,24 @@
 
 import UIKit
 
-public final class DVPageContainerPresenter: DVpageContainerModuleInput {
-    private weak var pageContainerViewInput: DVPageContainerViewController?
+public final class DVPageContainerPresenter: DVpageContainerModuleInput, DVPageContainerViewOutput {
+    private weak var pageContainerViewInput: DVPageContainerViewInput?
+    private weak var moduleOutput: DVPageContainerModuleOutput?
     
-    public init(pageContainerViewInput: DVPageContainerViewController) {
+    public init(pageContainerViewInput: DVPageContainerViewInput) {
         self.pageContainerViewInput = pageContainerViewInput
+        
+        setupActions()
     }
     
-    public func setPageContainerContent(_ pageContainerContent: DVPageContainerContent) {
-        let viewModel = DVPageContainerViewModel(
-            itemsViewModels: pageContainerContent.items.enumerated().map { offset, contentItem in
-                let chipsViewModel = ChipsViewModel(
-                    id: offset,
-                    title: contentItem.title,
-                    isSelected: offset == 0
-                )
-                return DVPageContainerItemViewModel(
-                    chipsViewModel: chipsViewModel,
-                    childPageController: contentItem.pageController
-                )
-            }
-        )
-        pageContainerViewInput?.apply(viewModel)
+    private func setupActions() {
+        pageContainerViewInput?.onViewDidAppear = { [weak self] in
+            self?.moduleOutput?.onPageContainerDidAppear()
+        }
+    }
+    
+    public func setPageContainerContent(_ pageContainerItems: [DVPageContainerContentItem]) {
+        pageContainerViewInput?.setPagesContainerItems(with: pageContainerItems)
     }
     
     public func childPageViewDidScroll(with offset: CGFloat) {
@@ -36,6 +32,14 @@ public final class DVPageContainerPresenter: DVpageContainerModuleInput {
     }
     
     public func setInnerViewsContent(_ content: DVPageContainerInnerViewsContent) {
-        pageContainerViewInput?.setCustomViewsContent(content)
+        pageContainerViewInput?.setInnerViewsContent(content, for: nil)
+    }
+    
+    public func setModuleOutput(_ output: DVPageContainerModuleOutput) {
+        self.moduleOutput = output
+    }
+    
+    public func scrollToPage(with index: Int) {
+        pageContainerViewInput?.scrollToPage(with: index)
     }
 }
