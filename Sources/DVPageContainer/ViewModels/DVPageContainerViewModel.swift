@@ -13,7 +13,7 @@ public struct DVPageContainerItemViewModel: Equatable {
     let chipsViewModel: ChipsViewModel
     let childPageController: DVPageViewController
     
-    static func == (
+    public static func == (
         lhs: DVPageContainerItemViewModel,
         rhs: DVPageContainerItemViewModel
     ) -> Bool {
